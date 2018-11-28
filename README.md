@@ -1,6 +1,2 @@
 # Solar-System-Model
-Model 3D Układu Słonecznego wykonany dzięki bibliotece Three.js. Klawiszami "A" oraz "D" poruszamy kamerą na boki, klawisze
-"Q" i "E" oddalają ją lub przybliżają. 
-Dodatkwo wyświetlane menu z nazwami planet pozwala po kliknięciu skupić kamerę na danej planecie skąd możemy także za 
-pomocą klawiszy "A" i "D" obejrzeć ją dookoła.
-Klawisz "ESC" powraca do kamery padającej na cały Układ Słoneczny.
+A 3D Model of the Solar System was created using Javascript and the Three.js Library. Using the “a” and “d” keys you can move the camera from side to side. The “q” and “e” keys change the zoom. Additionally you can click on any of the planets  shown on the page which will focus the camera on that particular planet you clicked on. In this mode you can also use the “a” and “d” to move the camera from side to side. The “ESC” button will take you back to the view of the Solar System.
