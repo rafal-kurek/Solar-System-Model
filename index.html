@@ -1,0 +1,692 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Uklad sloneczny</title>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #pole {
+            position: absolute;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+
+
+        }
+
+        .planeta {
+            position: absolute;
+            font-size: 25px;
+            color: white;
+            z-index: 10;
+        }
+
+    </style>
+
+    <script src="libs/three.js"></script>
+
+    <script>
+        window.addEventListener("load", function() {
+            var x
+            var y
+            var z
+            var dol1
+            var gora1
+            var rusz = false;
+            var angle = 45
+            var angle1 = 45
+            var angle2 = 45
+            var merkury = 45
+            var wenus = 45
+            var ziemia = 45
+            var mars = 45
+            var jowisz = 45
+            var saturn = 45
+            var uran = 45
+            var neptun = 45
+            var gora = false;
+            var dol = false;
+            var prawo = false;
+            var lewo = false;
+            var promien = 200
+            var dalej = false
+            var blizej = false
+            var eldo = false
+            var now
+
+
+            Math.radians = function(degrees) {
+                return degrees * Math.PI / 180;
+            };
+
+            //tablica przechowująca informację o każdej planecie
+            var planety = [{
+                    nazwa: "Słońce",
+                    wielkosc: 110,
+                    prom: 0,
+                    obrot: 0,
+                    okraz: 0,
+                    link: new THREE.MeshBasicMaterial({
+                        side: THREE.DoubleSide,
+                        map: THREE.ImageUtils.loadTexture('mats/sun.jpg')
+                    })
+                },
+                {
+                    nazwa: "Merkury",
+                    wielkosc: 5,
+                    prom: 200,
+                    obrot: 0.1,
+                    okraz: 3,
+                    link: new THREE.MeshBasicMaterial({
+                        side: THREE.DoubleSide,
+                        map: THREE.ImageUtils.loadTexture('mats/merkury.jpg')
+                    })
+                },
+                {
+                    nazwa: "Wenus",
+                    wielkosc: 12,
+                    prom: 270,
+                    obrot: 0.1,
+                    okraz: 1,
+                    link: new THREE.MeshBasicMaterial({
+                        side: THREE.DoubleSide,
+                        map: THREE.ImageUtils.loadTexture('mats/wenus.jpg')
+                    })
+                },
+                {
+                    nazwa: "Ziemia",
+                    wielkosc: 13,
+                    prom: 370,
+                    obrot: 0.050,
+                    okraz: 0.75,
+                    link: new THREE.MeshBasicMaterial({
+                        side: THREE.DoubleSide,
+                        map: THREE.ImageUtils.loadTexture('mats/ziemia.jpg')
+                    })
+                },
+                {
+                    nazwa: "Mars",
+                    wielkosc: 9,
+                    prom: 470,
+                    obrot: 0.050,
+                    okraz: 0.5,
+                    link: new THREE.MeshBasicMaterial({
+                        side: THREE.DoubleSide,
+                        map: THREE.ImageUtils.loadTexture('mats/mars.jpg')
+                    })
+                },
+                {
+                    nazwa: "Jowisz",
+                    wielkosc: 40,
+                    prom: 670,
+                    obrot: 0.010000,
+                    okraz: 0.3,
+                    link: new THREE.MeshBasicMaterial({
+                        side: THREE.DoubleSide,
+                        map: THREE.ImageUtils.loadTexture('mats/jowisz.jpg')
+                    })
+                },
+                {
+                    nazwa: "Saturn",
+                    wielkosc: 35,
+                    prom: 840,
+                    obrot: 0.00035000,
+                    okraz: 0.2,
+                    link: new THREE.MeshBasicMaterial({
+                        side: THREE.DoubleSide,
+                        map: THREE.ImageUtils.loadTexture('mats/saturn.jpg')
+                    })
+                },
+                {
+                    nazwa: "Uran",
+                    wielkosc: 23,
+                    prom: 1190,
+                    obrot: 0.03,
+                    okraz: 0.1,
+                    link: new THREE.MeshBasicMaterial({
+                        side: THREE.DoubleSide,
+                        map: THREE.ImageUtils.loadTexture('mats/uran.jpg')
+                    })
+                },
+                {
+                    nazwa: "Neptun",
+                    wielkosc: 22,
+                    prom: 1390,
+                    obrot: 0.03,
+                    okraz: 0.0500,
+                    link: new THREE.MeshBasicMaterial({
+                        side: THREE.DoubleSide,
+                        map: THREE.ImageUtils.loadTexture('mats/neptun.jpg')
+                    })
+                }
+
+            ]
+
+
+            // tworzenie pola
+            var pole = document.createElement("div")
+            pole.setAttribute("id", "pole")
+            document.body.appendChild(pole)
+
+            // tworzenie divow
+
+            for (var i = 1; i < planety.length; i++) {
+                var blok = document.createElement("div")
+
+                blok.setAttribute("id", planety[i].nazwa.toLowerCase())
+                blok.setAttribute("class", "planeta")
+                document.getElementById("pole").appendChild(blok)
+                blok.innerHTML = i + ". " + planety[i].nazwa
+                blok.style.left = "90%"
+                blok.style.top = i * 50 + "px"
+            }
+
+
+
+            //THREE.JS
+            var scene = new THREE.Scene();
+
+            var camera = new THREE.PerspectiveCamera(
+
+                45, // kąt patrzenia kamery (FOV - field of view)
+                screen.width / screen.height, // proporcje widoku, powinny odpowiadać proporjom naszego ekranu przeglądarki
+                //window.innerWidth / window.innerHeight,
+                0.1, // minimalna renderowana odległość
+                10000 // maxymalna renderowana odległość
+            );
+
+            var renderer = new THREE.WebGLRenderer();
+
+            renderer.setClearColor(0x000000);
+
+            renderer.setSize(screen.width, screen.height);
+
+            var geometry = new THREE.BoxGeometry(10000, 10000, 10000);
+
+
+            var material = new THREE.MeshBasicMaterial({
+                side: THREE.DoubleSide,
+                map: THREE.ImageUtils.loadTexture('mats/kosmos.jpg')
+            })
+
+
+            var mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+
+            //tworzenie każdej z planet osobno
+            for (var i = 0; i < planety.length; i++) {
+                var boxGeometry = new THREE.SphereGeometry(planety[i].wielkosc, 32, 32);
+                var faceMaterial = planety[i].link
+                var mesh = new THREE.Mesh(boxGeometry, faceMaterial);
+
+                scene.add(mesh);
+
+                var curve = new THREE.EllipseCurve(
+                    0, 0, // ax, aY
+                    planety[i].prom, planety[i].prom, // xRadius, yRadius
+                    0, 2 * Math.PI, // aStartAngle, aEndAngle
+                    false, // aClockwise
+                    0 // aRotation
+                );
+
+
+                var path = new THREE.Path(curve.getPoints(50));
+                var geometry = path.createPointsGeometry(50);
+                var material = new THREE.LineBasicMaterial({
+                    color: 0x68676B
+                });
+
+                // Create the final object to add to the scene
+                var ellipse = new THREE.Line(geometry, material);
+                ellipse.rotation.x = 1.5 * Math.PI
+                scene.add(ellipse)
+                scene.add(mesh)
+
+
+
+            }
+
+            //główny div
+            document.getElementById("pole").appendChild(renderer.domElement);
+
+            //obsługa przycisków
+            function onKeyDown(event) {
+
+                var keyCode = event.which;
+
+                console.log(keyCode); // wyloguj kod klawisza
+
+                switch (keyCode) {
+
+                    case 87:
+                        gora = true
+                        // console.log("naciskasz W");
+
+
+                        break;
+
+                    case 83:
+                        dol = true
+
+                        break;
+
+                    case 65:
+                        lewo = true
+
+                        break;
+                    case 68:
+                        prawo = true
+
+                        break;
+
+                    case 69:
+                        blizej = true
+                        break;
+
+                    case 81:
+
+                        dalej = true
+                        break;
+
+
+
+                }
+
+            }
+
+            function onKeyUp(event) {
+
+                var keyCode = event.which;
+
+                console.log(keyCode); // wyloguj kod klawisza
+
+                switch (keyCode) {
+
+                    case 87:
+                        gora = false
+                        // console.log("naciskasz W");
+
+
+                        break;
+
+                    case 83:
+                        dol = false
+
+                        break;
+
+                    case 65:
+                        lewo = false
+
+                        break;
+                    case 68:
+                        prawo = false
+
+                        break;
+
+                    case 69:
+                        blizej = false
+                        break;
+
+                    case 81:
+
+                        dalej = false
+                        break;
+
+
+
+
+                }
+
+            }
+
+            function up(event) {
+
+                var keyCode = event.which;
+
+                console.log(keyCode); // wyloguj kod klawisza
+
+                switch (keyCode) {
+
+                    case 87:
+                        gora1 = false
+                        // console.log("naciskasz W");
+
+
+                        break;
+
+                    case 83:
+                        dol1 = false
+
+                        break;
+
+                }
+
+            }
+
+            function down(event) {
+
+                var keyCode = event.which;
+
+                console.log(keyCode); // wyloguj kod klawisza
+
+                switch (keyCode) {
+
+                    case 87:
+                        gora1 = true
+                        // console.log("naciskasz W");
+
+
+                        break;
+
+                    case 83:
+                        dol1 = true
+
+                        break;
+                }
+
+            }
+
+            function obiekty() {
+                now = this.id
+                console.log(now)
+
+
+                x = camera.position.x
+                y = camera.position.y
+                z = camera.position.z
+
+
+                camera.position.y = 50;
+
+                eldo = true
+                document.removeEventListener("keydown", onKeyDown, false);
+
+                document.removeEventListener("keyup", onKeyUp, false);
+
+                document.addEventListener("keydown", wyjdz, false);
+
+                document.addEventListener("keydown", down, false);
+                document.addEventListener("keyup", up, false);
+
+
+            }
+
+            function wyjdz(event) {
+
+                var keyCode = event.which;
+
+
+                switch (keyCode) {
+
+                    case 27:
+                        eldo = false
+                        document.addEventListener("keydown", onKeyDown, false);
+
+                        document.addEventListener("keyup", onKeyUp, false);
+
+                        document.getElementById(now).addEventListener("click", obiekty, false);
+
+                        document.removeEventListener("keydown", wyjdz, false);
+
+                        document.removeEventListener("keydown", down, false);
+                        document.removeEventListener("keyup", up, false);
+
+                        camera.position.x = x
+                        camera.position.y = y
+                        camera.position.z = z
+
+
+
+                        break;
+                }
+
+
+            }
+
+
+
+
+
+            camera.position.x = 142;
+            camera.position.y = 80;
+            camera.position.z = 142;
+            console.log(scene.children)
+
+
+            //funkcja animująca
+            function animateScene() {
+
+                mars -= planety[4].okraz
+                scene.children[10].position.x = planety[4].prom * Math.cos(Math.radians(mars));
+                scene.children[10].position.z = planety[4].prom * Math.sin(Math.radians(mars));
+                scene.children[10].rotation.y += planety[4].obrot
+
+                wenus -= planety[2].okraz
+                scene.children[6].position.x = planety[2].prom * Math.cos(Math.radians(wenus));
+                scene.children[6].position.z = planety[2].prom * Math.sin(Math.radians(wenus));
+                scene.children[6].rotation.y += planety[2].obrot
+
+                ziemia -= planety[3].okraz
+                scene.children[8].position.x = planety[3].prom * Math.cos(Math.radians(ziemia));
+                scene.children[8].position.z = planety[3].prom * Math.sin(Math.radians(ziemia));
+                scene.children[8].rotation.y += planety[3].obrot
+
+                jowisz -= planety[5].okraz
+                scene.children[12].position.x = planety[5].prom * Math.cos(Math.radians(jowisz));
+                scene.children[12].position.z = planety[5].prom * Math.sin(Math.radians(jowisz));
+                scene.children[12].rotation.y += planety[5].obrot
+
+
+                saturn -= planety[6].okraz
+                scene.children[14].position.x = planety[6].prom * Math.cos(Math.radians(saturn));
+                scene.children[14].position.z = planety[6].prom * Math.sin(Math.radians(saturn));
+                scene.children[14].rotation.y += planety[6].obrot
+
+                uran -= planety[7].okraz
+                scene.children[16].position.x = planety[7].prom * Math.cos(Math.radians(uran));
+                scene.children[16].position.z = planety[7].prom * Math.sin(Math.radians(uran));
+                scene.children[16].rotation.y += planety[7].obrot
+
+
+                neptun -= planety[8].okraz
+                scene.children[18].position.x = planety[8].prom * Math.cos(Math.radians(neptun));
+                scene.children[18].position.z = planety[8].prom * Math.sin(Math.radians(neptun));
+                scene.children[18].rotation.y += planety[8].obrot
+
+                merkury -= planety[1].okraz
+                scene.children[4].position.x = planety[1].prom * Math.cos(Math.radians(merkury));
+                scene.children[4].position.z = planety[1].prom * Math.sin(Math.radians(merkury));
+                scene.children[4].rotation.y += planety[1].obrot
+
+
+                requestAnimationFrame(animateScene);
+                if (eldo == false) {
+                    camera.lookAt(scene.position);
+                }
+
+                renderer.render(scene, camera);
+
+
+
+                if (eldo == true) {
+
+                    switch (now) {
+                        case "merkury":
+                            camera.lookAt(scene.children[4].position)
+
+                            camera.position.x = (planety[1].prom * Math.cos(Math.radians(merkury))) - 100;
+                            //camera.position.y = 50;
+                            camera.position.z = planety[1].prom * Math.sin(Math.radians(merkury));
+                            if (gora1 == true) {
+                                camera.position.y = camera.position.y + 2
+
+                            } else if (dol1 == true) {
+                                camera.position.y = camera.position.y - 2
+                            }
+                            break;
+
+                        case "wenus":
+                            camera.lookAt(scene.children[6].position);
+
+                            camera.position.x = (planety[2].prom * Math.cos(Math.radians(wenus))) - 100;
+                            // camera.position.y = 50;
+                            camera.position.z = planety[2].prom * Math.sin(Math.radians(wenus));
+                            if (gora1 == true) {
+                                camera.position.y = camera.position.y + 2
+
+                            } else if (dol1 == true) {
+                                camera.position.y = camera.position.y - 2
+                            }
+                            break;
+
+                        case "ziemia":
+                            camera.lookAt(scene.children[8].position)
+
+                            camera.position.x = (planety[3].prom * Math.cos(Math.radians(ziemia))) - 100;
+                            // camera.position.y = 50;
+                            camera.position.z = planety[3].prom * Math.sin(Math.radians(ziemia));
+                            if (gora1 == true) {
+                                camera.position.y = camera.position.y + 2
+
+                            } else if (dol1 == true) {
+                                camera.position.y = camera.position.y - 2
+                            }
+                            break;
+                        case "mars":
+                            camera.lookAt(scene.children[10].position)
+
+                            camera.position.x = (planety[4].prom * Math.cos(Math.radians(mars))) - 100;
+                            //camera.position.y = 50;
+                            camera.position.z = planety[4].prom * Math.sin(Math.radians(mars));
+                            if (gora1 == true) {
+                                camera.position.y = camera.position.y + 2
+
+                            } else if (dol1 == true) {
+                                camera.position.y = camera.position.y - 2
+                            }
+                            break;
+
+                        case "jowisz":
+                            camera.lookAt(scene.children[12].position)
+
+                            camera.position.x = (planety[5].prom * Math.cos(Math.radians(jowisz))) - 100;
+                            //camera.position.y = 50;
+                            camera.position.z = planety[5].prom * Math.sin(Math.radians(jowisz));
+                            if (gora1 == true) {
+                                camera.position.y = camera.position.y + 2
+
+                            } else if (dol1 == true) {
+                                camera.position.y = camera.position.y - 2
+                            }
+                            break;
+
+                        case "saturn":
+                            camera.lookAt(scene.children[14].position)
+
+                            camera.position.x = (planety[6].prom * Math.cos(Math.radians(saturn))) - 100;
+                            // camera.position.y = 50;
+                            camera.position.z = planety[6].prom * Math.sin(Math.radians(saturn));
+                            if (gora1 == true) {
+                                camera.position.y = camera.position.y + 2
+
+                            } else if (dol1 == true) {
+                                camera.position.y = camera.position.y - 2
+                            }
+                            break;
+
+                        case "uran":
+                            camera.lookAt(scene.children[16].position)
+
+                            camera.position.x = (planety[7].prom * Math.cos(Math.radians(uran))) - 100;
+                            // camera.position.y = 50;
+                            camera.position.z = planety[7].prom * Math.sin(Math.radians(uran));
+                            if (gora1 == true) {
+                                camera.position.y = camera.position.y + 2
+
+                            } else if (dol1 == true) {
+                                camera.position.y = camera.position.y - 2
+                            }
+                            break;
+
+                        case "neptun":
+                            camera.lookAt(scene.children[18].position)
+
+                            camera.position.x = (planety[8].prom * Math.cos(Math.radians(neptun))) - 100;
+                            // camera.position.y = 50;
+                            camera.position.z = planety[8].prom * Math.sin(Math.radians(neptun));
+                            if (gora1 == true) {
+                                camera.position.y = camera.position.y + 2
+
+                            } else if (dol1 == true) {
+                                camera.position.y = camera.position.y - 2
+                            }
+                            break;
+
+                    }
+
+
+                }
+
+                if (gora == true) {
+                    camera.position.y = camera.position.y + 10
+                    camera.lookAt(scene.position)
+
+
+                } else if (dol == true) {
+                    camera.position.y = camera.position.y - 10
+                    camera.lookAt(scene.position)
+
+                } else if (blizej == true) {
+                    promien -= 10;
+                    camera.position.x = promien * Math.cos(Math.radians(angle));
+                    camera.position.z = promien * Math.sin(Math.radians(angle));
+                    camera.lookAt(mesh.position);
+                } else if (dalej == true) {
+                    promien += 10;
+                    camera.position.x = promien * Math.cos(Math.radians(angle));
+                    camera.position.z = promien * Math.sin(Math.radians(angle));
+                    camera.lookAt(mesh.position);
+                } else if (lewo == true) {
+                    angle += 2;
+                    camera.position.x = promien * Math.cos(Math.radians(angle));
+                    camera.position.z = promien * Math.sin(Math.radians(angle));
+                    camera.lookAt(mesh.position);
+
+                } else if (prawo == true) {
+                    angle -= 2;
+                    camera.position.x = promien * Math.cos(Math.radians(angle));
+                    camera.position.z = promien * Math.sin(Math.radians(angle));
+                    camera.lookAt(mesh.position);
+                }
+
+            }
+
+            animateScene();
+            document.addEventListener("keydown", onKeyDown, false);
+
+            document.addEventListener("keyup", onKeyUp, false);
+
+            for (var i = 1; i < planety.length; i++) {
+                document.getElementById(planety[i].nazwa.toLowerCase()).addEventListener("click", obiekty, false);
+            }
+
+
+
+            document.addEventListener("keydown", wyjdz, false);
+
+        })
+
+    </script>
+</head>
+
+<body>
+
+</body>
+
+</html>
